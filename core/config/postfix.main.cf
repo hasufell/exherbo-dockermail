@@ -5,6 +5,8 @@
 # is /etc/mailname.
 #myorigin = /etc/mailname
 
+inet_protocols=ipv6
+
 smtpd_banner = $myhostname ESMTP $mail_name
 biff = no
 
