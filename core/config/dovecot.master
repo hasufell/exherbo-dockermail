@@ -1,4 +1,4 @@
-listen = "[::]"
+listen = "*, [::]"
 
 service imap-login {
   inet_listener imap {
