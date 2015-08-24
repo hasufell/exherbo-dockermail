@@ -5,7 +5,7 @@
 # is /etc/mailname.
 #myorigin = /etc/mailname
 
-inet_protocols=all
+inet_protocols = ipv6
 
 smtpd_banner = $myhostname ESMTP $mail_name
 biff = no
@@ -33,7 +33,7 @@ alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 mydestination = /etc/mailname, localhost.localdomain, localhost
 relayhost =
-mynetworks = 127.0.0.0/8 172.0.0.0/8
+mynetworks = 127.0.0.0/8 [::1]/128 [2a01:4f8:121:50d2::2]/128
 mailbox_size_limit = 0
 recipient_delimiter = +
 
