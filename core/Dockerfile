@@ -12,6 +12,9 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# install nano
+RUN apt-get update && apt-get install -y nano
+
 # Postfix configuration
 ADD ./config/postfix.main.cf /etc/postfix/main.cf
 ADD ./config/postfix.master.cf.append /etc/postfix/master-additional.cf
