@@ -37,6 +37,8 @@ Use the the example config files in `config/example` to get you started.
 
 4. Change the hostname in file `/var/lib/dockermail/settings/myhostname` to the correct fully qualified domain of your server.
 
+5. Set the "mynetworks" variable for postfix in file `/var/lib/dockermail/settings/postfix-networks` to e.g. `127.0.0.0/8 [::1]/128` (one single line only).
+
 5. Build container
 
 		docker build -t dockermail_email_core .
