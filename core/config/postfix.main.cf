@@ -29,9 +29,9 @@ smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 # information on enabling SSL in the smtp client.
 
 myhostname = localhost
-alias_maps = hash:/etc/aliases
-alias_database = hash:/etc/aliases
-mydestination = /etc/mailname, localhost.localdomain, localhost
+#alias_maps = hash:/etc/mail/aliases
+#alias_database = hash:/etc/mail/aliases
+mydestination = localhost.localdomain, localhost
 relayhost =
 mynetworks = 127.0.0.0/8 [::1]/128
 mailbox_size_limit = 0
@@ -58,8 +58,8 @@ smtpd_relay_restrictions = permit_auth_destination, permit_mynetworks, reject
 smtpd_recipient_restrictions = permit
 
 # Delivery to dovecot
-alias_maps = hash:/etc/aliases
-alias_database = hash:/etc/aliases
+#alias_maps = hash:/etc/mail/aliases
+#alias_database = hash:/etc/mail/aliases
 virtual_alias_maps = hash:/etc/postfix/virtual
 virtual_mailbox_domains = /etc/postfix/virtual-mailbox-domains
 virtual_mailbox_maps = hash:/etc/postfix/virtual-mailbox-maps

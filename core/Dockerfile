@@ -46,6 +46,7 @@ RUN openssl req -new -x509 -nodes -out /etc/ssl/certs/postfix.pem -keyout /etc/s
 ADD ./config/postfix.main.cf /etc/postfix/main.cf
 ADD ./config/postfix.master.cf.append /etc/postfix/master-additional.cf
 RUN cat /etc/postfix/master-additional.cf >> /etc/postfix/master.cf
+RUN newaliases -oA/etc/mail/aliases
 
 # Dovecot configuration
 COPY ./config/dovecot.mail /etc/dovecot/conf.d/10-mail.conf

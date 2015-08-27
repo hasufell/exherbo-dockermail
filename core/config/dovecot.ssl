@@ -1,5 +1,5 @@
 ssl = yes
-disable_plaintext_auth = yes
+disable_plaintext_auth = no
 ssl_cert = </etc/ssl/certs/dovecot.pem
 ssl_key = </etc/ssl/private/dovecot.pem
 
