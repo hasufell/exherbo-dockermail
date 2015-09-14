@@ -47,7 +47,7 @@ Use the the example config files in `config/example` to get you started.
 
 ```
 docker run -ti -d \
-	-name dockermail \
+	--name dockermail \
 	-p 25:25 \
 	-p 587:587 \
 	-p 143:143 \
