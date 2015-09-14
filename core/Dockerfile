@@ -55,6 +55,7 @@ COPY ./config/dovecot.auth /etc/dovecot/conf.d/10-auth.conf
 COPY ./config/dovecot.master /etc/dovecot/conf.d/10-master.conf
 COPY ./config/dovecot.lda /etc/dovecot/conf.d/15-lda.conf
 COPY ./config/dovecot.imap /etc/dovecot/conf.d/20-imap.conf
+COPY ./config/dovecot.sieve /etc/dovecot/conf.d/90-sieve.conf
 # Uncomment to add verbose logging
 COPY ./config/dovecot.logging /etc/dovecot/conf.d/10-logging.conf
 COPY ./config/supervisord.conf /etc/supervisord.conf
@@ -68,12 +69,20 @@ RUN chmod 755 /boot
 COPY boot.d /boot.d
 RUN chmod -R 755 /boot.d
 
-# Volume to store email
-VOLUME ["/vmail"]
 
 # Add user vmail that owns mail
 RUN groupadd -g 5000 vmail
 RUN useradd -g vmail -u 5000 vmail -d /vmail -m
+
+# create global sieve folder/rule
+RUN mkdir -p /vmail/sieve && echo -e "require \"fileinto\";\
+\nif header :contains \"X-Spam-Flag\" \"YES\" {\
+\n  fileinto \"Spam\";\
+\n}" > /vmail/sieve/spam-global.sieve && \
+        chown -R vmail:vmail /vmail/sieve/
+
+# Volume to store email
+VOLUME ["/vmail"]
 
 EXPOSE 25 143 587
 
