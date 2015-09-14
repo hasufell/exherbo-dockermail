@@ -58,3 +58,7 @@ docker run -ti -d \
 ```
 
 Note that the certificates must be named `email.crt` and `email.key`.
+
+## TODO
+
+* managesieve
