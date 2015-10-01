@@ -90,4 +90,4 @@ VOLUME ["/vmail"]
 
 EXPOSE 25 143 587 4190
 
-ENTRYPOINT /boot; /usr/bin/supervisord -n
+CMD /boot; /usr/bin/supervisord -n
