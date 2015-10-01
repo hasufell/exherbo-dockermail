@@ -2,16 +2,19 @@ FROM        hasufell/gentoo-amd64-paludis:latest
 MAINTAINER  Julian Ospald "hasufell@posteo.de"
 
 # check these with "cave show <package-name>"
-RUN echo -e "*/* acl bash-completion ipv6 kmod openrc pcre readline unicode\
-	zlib pam ssl sasl bzip2 urandom crypt tcpd\
-	-acpi -cairo -consolekit -cups -dbus -dri -gnome -gnutls -gtk -ogg -opengl\
-	-pdf -policykit -qt3support -qt5 -qt4 -sdl -sound -systemd -truetype -vim\
-	-vim-syntax -wayland -X\
-	\n\
-	\nnet-mail/dovecot cydir imapc maildir mbox mdbox pam pop3c sieve sqlite\
-	\n\
-	\nmail-mta/postfix dovecot-sasl mbox sasl" \
+RUN echo -e "*/* acl bash-completion ipv6 kmod openrc pcre readline unicode \
+	zlib pam ssl sasl bzip2 urandom crypt tcpd \
+	-acpi -cairo -consolekit -cups -dbus -dri -gnome -gnutls -gtk -ogg -opengl \
+	-pdf -policykit -qt3support -qt5 -qt4 -sdl -sound -systemd -truetype -vim \
+	-vim-syntax -wayland -X" \
 	>> /etc/paludis/use.conf
+
+RUN mkdir -p /etc/paludis/use.conf.d && echo -e \
+	"net-mail/dovecot cydir imapc maildir managesieve mbox mdbox pam pop3c \
+	sieve sqlite \
+	\n \
+	\nmail-mta/postfix dovecot-sasl mbox sasl" \
+	>> /etc/paludis/use.conf.d/mail.conf
 
 # update world with our USE flags
 RUN chgrp paludisbuild /dev/tty && cave resolve -c world -x
@@ -56,6 +59,7 @@ COPY ./config/dovecot.master /etc/dovecot/conf.d/10-master.conf
 COPY ./config/dovecot.lda /etc/dovecot/conf.d/15-lda.conf
 COPY ./config/dovecot.imap /etc/dovecot/conf.d/20-imap.conf
 COPY ./config/dovecot.sieve /etc/dovecot/conf.d/90-sieve.conf
+COPY ./config/dovecot.managesieve /etc/dovecot/conf.d/20-managesieve.conf
 # Uncomment to add verbose logging
 COPY ./config/dovecot.logging /etc/dovecot/conf.d/10-logging.conf
 COPY ./config/supervisord.conf /etc/supervisord.conf
@@ -84,6 +88,6 @@ RUN mkdir -p /vmail/sieve && echo -e "require \"fileinto\";\
 # Volume to store email
 VOLUME ["/vmail"]
 
-EXPOSE 25 143 587
+EXPOSE 25 143 587 4190
 
 ENTRYPOINT /boot; /usr/bin/supervisord -n
