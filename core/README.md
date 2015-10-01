@@ -51,6 +51,7 @@ docker run -ti -d \
 	-p 25:25 \
 	-p 587:587 \
 	-p 143:143 \
+	-p 4190:4190 \
 	-v /var/lib/dockermail/settings:/mail_settings \
 	-v /var/lib/dockermail/vmail:/vmail \
 	-v <path-to-certs>:/etc/ssl/server
