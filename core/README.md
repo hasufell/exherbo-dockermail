@@ -48,17 +48,15 @@ Use the the example config files in `config/example` to get you started.
 
 6. Run container
 
-```
-docker run -ti -d \
-	--name dockermail \
-	-p 25:25 \
-	-p 587:587 \
-	-p 143:143 \
-	-p 4190:4190 \
-	-v /var/lib/dockermail/settings:/mail_settings \
-	-v /var/lib/dockermail/vmail:/vmail \
-	-v <path-to-certs>:/etc/ssl/server
-	dockermail_email_core
-```
+		docker run -ti -d \
+		  --name dockermail \
+		  -p 25:25 \
+		  -p 587:587 \
+		  -p 143:143 \
+		  -p 4190:4190 \
+		  -v /var/lib/dockermail/settings:/mail_settings \
+		  -v /var/lib/dockermail/vmail:/vmail \
+		  -v <path-to-certs>:/etc/ssl/server
+		  dockermail_email_core
 
-Note that the certificates must be named `email.crt` and `email.key`.
+	Note that the certificates must be named `email.crt` and `email.key`.
