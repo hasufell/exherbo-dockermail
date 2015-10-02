@@ -8,7 +8,6 @@ The setup is modular and so far has (more to come, feel free to contribute :)
 
 * `core` -  base SMTP and IMAP server
 * `opendkim` - adds DKIM signing service to the core
-* `amavis` - adds incoming SPAM filter
 
 Please see the README in each folder for more information on each image.
 
@@ -32,4 +31,4 @@ and it will spin up both container and link them together, easy!
 * Testing
 
 ### TODO
-* gentoo support for amavis and opendkim
+* gentoo support for opendkim
