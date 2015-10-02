@@ -1,6 +1,9 @@
 Dockermail - Email Core
 ==========
-This image provides a secure, minimal mail server based on 'postfix' and 'dovecot'.
+This image provides a secure mail server based on:
+* postfix
+* dovecot (with sieve/managesieve support)
+* spamassasin (with pyzor and razor)
 
 All incoming mail to your domains is accepted.
 For outgoing mail, only authenticated (logged in with username and password) clients can send messages via STARTTLS.
@@ -41,9 +44,9 @@ Use the the example config files in `config/example` to get you started.
 
 5. Build container
 
-		docker build -t dockermail_email_core .
+		docker build -t hasufell/gentoo-dockermail .
 
-6. Run container and map ports 25 and 143 from the host to the container.
+6. Run container
 
 ```
 docker run -ti -d \
@@ -59,7 +62,3 @@ docker run -ti -d \
 ```
 
 Note that the certificates must be named `email.crt` and `email.key`.
-
-## TODO
-
-* managesieve
