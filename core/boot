@@ -25,6 +25,9 @@ postmap /etc/postfix/virtual
 postmap /etc/postfix/virtual-mailbox-maps
 chown -R postfix:postfix /etc/postfix
 
+# add global sieve script
+mkdir -p /vmail/sieve && cp /mail_settings/spam-global.sieve /vmail/sieve/
+
 # Make user vmail own all mail folders
 chown -R vmail:vmail /vmail
 chmod u+w /vmail

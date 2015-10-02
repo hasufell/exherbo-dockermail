@@ -1,0 +1,7 @@
+
+# you should leave this untouched
+razor_config /etc/spamassassin/.razor/razor-agent.conf
+pyzor_options --homedir /etc/spamassassin/.pyzor
+
+# here goes your whitelist stuff for example
+# whitelist_from user@example.com

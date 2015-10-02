@@ -1,3 +1,6 @@
+lda_mailbox_autocreate = yes
+lda_mailbox_autosubscribe = yes
+
 protocol lda {
   hostname = mail.docker.container
   postmaster_address = postmaster@mail.docker.container

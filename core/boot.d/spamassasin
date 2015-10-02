@@ -1,0 +1,8 @@
+#!/bin/bash
+
+sa-update
+
+razor-admin -home=/etc/spamassassin/.razor -register
+razor-admin -home=/etc/spamassassin/.razor -create
+razor-admin -home=/etc/spamassassin/.razor -discover
+

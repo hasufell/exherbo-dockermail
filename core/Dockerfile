@@ -1,32 +1,27 @@
 FROM        hasufell/gentoo-amd64-paludis:latest
 MAINTAINER  Julian Ospald "hasufell@posteo.de"
 
-# check these with "cave show <package-name>"
-RUN echo -e "*/* acl bash-completion ipv6 kmod openrc pcre readline unicode \
-	zlib pam ssl sasl bzip2 urandom crypt tcpd \
-	-acpi -cairo -consolekit -cups -dbus -dri -gnome -gnutls -gtk -ogg -opengl \
-	-pdf -policykit -qt3support -qt5 -qt4 -sdl -sound -systemd -truetype -vim \
-	-vim-syntax -wayland -X" \
-	>> /etc/paludis/use.conf
+##### PACKAGE INSTALLATION #####
 
-RUN mkdir -p /etc/paludis/use.conf.d && echo -e \
-	"net-mail/dovecot cydir imapc maildir managesieve mbox mdbox pam pop3c \
-	sieve sqlite \
-	\n \
-	\nmail-mta/postfix dovecot-sasl mbox sasl" \
-	>> /etc/paludis/use.conf.d/mail.conf
+# copy paludis config
+COPY ./config/paludis /etc/paludis
 
 # update world with our USE flags
 RUN chgrp paludisbuild /dev/tty && cave resolve -c world -x
 
-# install dovecot
-RUN chgrp paludisbuild /dev/tty && cave resolve -z net-mail/dovecot mail-mta/postfix -x
+# install mail set
+RUN chgrp paludisbuild /dev/tty && cave resolve -c mail -x
 
-# install tools
-RUN chgrp paludisbuild /dev/tty && cave resolve -z app-admin/supervisor sys-process/htop -x
+# install tools set
+RUN chgrp paludisbuild /dev/tty && cave resolve -c tools -x
 
 # update etc files... hope this doesn't screw up
 RUN etc-update --automode -5
+
+################################
+
+
+##### APPLICATION CONFIG #####
 
 # create dovecot certificates
 RUN mkdir -p /var/tmp/dovecot-cert
@@ -43,26 +38,44 @@ WORKDIR /
 RUN rm -r /var/tmp/dovecot-cert
 
 # create postfix certificates
-RUN openssl req -new -x509 -nodes -out /etc/ssl/certs/postfix.pem -keyout /etc/ssl/private/postfix.key -days 3650 -subj '/CN=www.example.com'
+RUN openssl req -new -x509 -nodes -out /etc/ssl/certs/postfix.pem -keyout \
+	/etc/ssl/private/postfix.key -days 3650 -subj '/CN=www.example.com'
 
 # Postfix configuration
-ADD ./config/postfix.main.cf /etc/postfix/main.cf
-ADD ./config/postfix.master.cf.append /etc/postfix/master-additional.cf
+ADD ./config/postfix/postfix.main.cf /etc/postfix/main.cf
+ADD ./config/postfix/postfix.master.cf.append /etc/postfix/master-additional.cf
 RUN cat /etc/postfix/master-additional.cf >> /etc/postfix/master.cf
+RUN sed -r -i -e \
+	'/^smtp[[:space:]]+inet[[:space:]]+/a\ -o content_filter=spamassassin' \
+	/etc/postfix/master.cf
 RUN newaliases -oA/etc/mail/aliases
 
 # Dovecot configuration
-COPY ./config/dovecot.mail /etc/dovecot/conf.d/10-mail.conf
-COPY ./config/dovecot.ssl /etc/dovecot/conf.d/10-ssl.conf
-COPY ./config/dovecot.auth /etc/dovecot/conf.d/10-auth.conf
-COPY ./config/dovecot.master /etc/dovecot/conf.d/10-master.conf
-COPY ./config/dovecot.lda /etc/dovecot/conf.d/15-lda.conf
-COPY ./config/dovecot.imap /etc/dovecot/conf.d/20-imap.conf
-COPY ./config/dovecot.sieve /etc/dovecot/conf.d/90-sieve.conf
-COPY ./config/dovecot.managesieve /etc/dovecot/conf.d/20-managesieve.conf
+COPY ./config/dovecot/dovecot.mail /etc/dovecot/conf.d/10-mail.conf
+COPY ./config/dovecot/dovecot.ssl /etc/dovecot/conf.d/10-ssl.conf
+COPY ./config/dovecot/dovecot.auth /etc/dovecot/conf.d/10-auth.conf
+COPY ./config/dovecot/dovecot.master /etc/dovecot/conf.d/10-master.conf
+
+COPY ./config/dovecot/dovecot.lda /etc/dovecot/conf.d/15-lda.conf
+COPY ./config/dovecot/dovecot.imap /etc/dovecot/conf.d/20-imap.conf
+COPY ./config/dovecot/dovecot.sieve /etc/dovecot/conf.d/90-sieve.conf
+COPY ./config/dovecot/dovecot.managesieve \
+	/etc/dovecot/conf.d/20-managesieve.conf
 # Uncomment to add verbose logging
-COPY ./config/dovecot.logging /etc/dovecot/conf.d/10-logging.conf
+COPY ./config/dovecot/dovecot.logging /etc/dovecot/conf.d/10-logging.conf
+
+# spamassasin configuration
+COPY ./config/spamassasin/spamassasin.local.append \
+	/etc/spamassassin/local.cf.append
+RUN mkdir /etc/spamassassin/.pyzor /etc/spamassassin/.razor
+COPY ./config/spamassasin/pyzor.servers /etc/spamassassin/.pyzor/servers
+RUN cat /etc/spamassassin/local.cf.append >> /etc/spamassassin/local.cf
+
+# supervisord configuration
 COPY ./config/supervisord.conf /etc/supervisord.conf
+
+##############################
+
 
 # Nice place for your settings
 VOLUME ["/mail_settings"]
@@ -73,17 +86,9 @@ RUN chmod 755 /boot
 COPY boot.d /boot.d
 RUN chmod -R 755 /boot.d
 
-
 # Add user vmail that owns mail
 RUN groupadd -g 5000 vmail
 RUN useradd -g vmail -u 5000 vmail -d /vmail -m
-
-# create global sieve folder/rule
-RUN mkdir -p /vmail/sieve && echo -e "require \"fileinto\";\
-\nif header :contains \"X-Spam-Flag\" \"YES\" {\
-\n  fileinto \"Spam\";\
-\n}" > /vmail/sieve/spam-global.sieve && \
-        chown -R vmail:vmail /vmail/sieve/
 
 # Volume to store email
 VOLUME ["/vmail"]
