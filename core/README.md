@@ -53,6 +53,7 @@ Use the the example config files in `config/example` to get you started.
 		  -p 25:25 \
 		  -p 587:587 \
 		  -p 143:143 \
+		  -p 993:993 \
 		  -p 4190:4190 \
 		  -v /var/lib/dockermail/settings:/mail_settings \
 		  -v /var/lib/dockermail/vmail:/vmail \

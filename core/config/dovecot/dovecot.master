@@ -5,9 +5,8 @@ service imap-login {
 
   }
 
-  #disable imaps since we use TLS connections through the standard imap
   inet_listener imaps {
-    port = 0
+
   }
 }
 
