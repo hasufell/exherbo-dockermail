@@ -26,6 +26,7 @@ RUN cp /usr/share/doc/dovecot-*/mkcert.sh /var/tmp/dovecot-cert/ ; \
 	cp /usr/share/doc/dovecot-*/dovecot-openssl.cnf /var/tmp/dovecot-cert/
 RUN chmod +x /var/tmp/dovecot-cert/mkcert.sh
 WORKDIR /var/tmp/dovecot-cert
+RUN mkdir /etc/ssl/private
 RUN ./mkcert.sh
 RUN chown root:dovecot /etc/ssl/certs/dovecot.pem ; \
 	chmod 0644 /etc/ssl/certs/dovecot.pem ; \
