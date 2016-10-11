@@ -7,13 +7,10 @@ MAINTAINER  Julian Ospald "hasufell@posteo.de"
 COPY ./config/paludis /etc/paludis
 
 # update world with our USE flags
-RUN chgrp paludisbuild /dev/tty && cave resolve -c world -x
-
-# install mail set
-RUN chgrp paludisbuild /dev/tty && cave resolve -c mail -x
-
-# install tools set
-RUN chgrp paludisbuild /dev/tty && cave resolve -c tools -x
+RUN chgrp paludisbuild /dev/tty && \
+	cave resolve -c world -x --without sys-devel/gcc && \
+	cave resolve -c mail -x --without sys-devel/gcc && \
+	cave resolve -c tools --without sys-devel/gcc -x
 
 # update etc files... hope this doesn't screw up
 RUN etc-update --automode -5
