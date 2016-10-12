@@ -1,4 +1,4 @@
-ssl = yes
+ssl = required
 disable_plaintext_auth = no
 ssl_cert = </etc/ssl/server/email.crt
 ssl_key = </etc/ssl/server/email.key

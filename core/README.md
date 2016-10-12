@@ -51,8 +51,7 @@ Use the the example config files in `config/example` to get you started.
 		docker run -ti -d \
 		  --name dockermail \
 		  -p 25:25 \
-		  -p 587:587 \
-		  -p 143:143 \
+		  -p 465:465 \
 		  -p 993:993 \
 		  -p 4190:4190 \
 		  -v /var/lib/dockermail/settings:/mail_settings \

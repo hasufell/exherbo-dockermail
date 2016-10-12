@@ -91,6 +91,6 @@ RUN useradd -g vmail -u 5000 vmail -d /vmail -m
 # Volume to store email
 VOLUME ["/vmail"]
 
-EXPOSE 25 143 587 993 4190
+EXPOSE 25 465 993 4190
 
 CMD /boot && exec /usr/bin/supervisord -n -c /etc/supervisord.conf

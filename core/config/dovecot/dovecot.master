@@ -1,8 +1,9 @@
 listen = "*, [::]"
 
 service imap-login {
+  # disable starttls
   inet_listener imap {
-
+	port = 0
   }
 
   inet_listener imaps {
