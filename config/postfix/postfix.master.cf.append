@@ -3,7 +3,7 @@ dovecot   unix  -       n       n       -       -       pipe
 
 # we need to be permissive with the helo restrictions since the client can only
 # authenticate after HELO has been sent
-submission      inet    n       -       n       -       -       smtpd
+smtps      inet    n       -       n       -       -       smtpd
  -o smtpd_etrn_restrictions=reject
  -o smtpd_tls_security_level=may
  -o smtpd_tls_wrappermode=yes
