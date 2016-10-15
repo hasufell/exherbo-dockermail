@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+while true; do
+	if [[ $(date +%H) == 23 ]] ; then
+		razor-admin -home=/etc/spamassassin/.razor -discover
+		sa-update
+	fi
+done

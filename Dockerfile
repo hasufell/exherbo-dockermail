@@ -85,6 +85,8 @@ COPY ./config/spamassasin/spamassasin.local.append \
 RUN mkdir /etc/spamassassin/.pyzor /etc/spamassassin/.razor
 COPY ./config/spamassasin/pyzor.servers /etc/spamassassin/.pyzor/servers
 RUN cat /etc/spamassassin/local.cf.append >> /etc/spamassassin/local.cf
+COPY ./update-spamlists /usr/bin/update-spamlists
+RUN chmod +x /usr/bin/update-spamlists
 
 # supervisord configuration
 COPY ./config/supervisord.conf /etc/supervisord.conf
