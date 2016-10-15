@@ -1,0 +1,199 @@
+# Copyright 2008 Fernando J. Pereda
+# Copyright 2013-2015 Johannes Nixdorf <mixi@exherbo.org>
+# Distributed under the terms of the GNU General Public License v2
+# Based in part upon 'postfix-2.5.1.ebuild' from Gentoo, which is:
+#     Copyright 1999-2008 Gentoo Foundation
+
+export_exlib_phases src_prepare src_configure src_install
+
+require pam alternatives systemd-service
+
+SUMMARY="Fast, easy to administer and secure mail transport agent"
+HOMEPAGE="http://www.postfix.org"
+DOWNLOADS="ftp://ftp.porcupine.org/mirrors/postfix-release/official/${PNV}.tar.gz"
+
+REMOTE_IDS="freecode:${PN}"
+
+UPSTREAM_DOCUMENTATION="${HOMEPAGE}/documentation.html [[ lang = en ]]"
+UPSTREAM_RELEASE_NOTES="${HOMEPAGE}/announcements/${PNV}.html [[ lang = en ]]"
+
+LICENCES="IPL-1.0"
+SLOT="0"
+MYOPTIONS="
+    cyrus      [[ description = [ Support using Cyrus SASL for SASL support (SASL support using dovecot is built unconditionally) ] ]]
+    ldap       [[ description = [ Support using LDAP as source for postfix lookup tables (see ${HOMEPAGE}/DATABASE_README.html) ] ]]
+    mysql      [[ description = [ Support using a MySQL database as source for postfix lookup tables (see ${HOMEPAGE}/DATABASE_README.html) ] ]]
+    postgresql [[ description = [ Support using a PostgreSQL database as source for postfix lookup tables (see ${HOMEPAGE}/DATABASE_README.html) ] ]]
+    ssl        [[ description = [ Support making SSL connections to remote servers and clients ] ]]
+    ssl? ( ( providers: libressl openssl ) [[ number-selected = exactly-one ]] )
+"
+
+DEPENDENCIES="
+    build+run:
+        dev-libs/pcre
+        group/postdrop
+        group/postfix
+        sys-libs/db:=
+        sys-libs/pam
+        user/postfix
+        cyrus? ( net-libs/cyrus-sasl )
+        ldap? ( net-directory/openldap )
+        mysql? (
+            sys-libs/zlib
+            virtual/mysql
+        )
+        postgresql? ( dev-db/postgresql )
+        ssl? (
+            providers:libressl? ( dev-libs/libressl:= )
+            providers:openssl? ( dev-libs/openssl )
+        )
+    suggestion:
+        net-mail/dovecot [[ description = [ Used for SASL support without cyrus-sasl ] ]]
+"
+
+if ever at_least 3 ; then
+    DEPENDENCIES+="
+        build+run:
+            dev-libs/icu:=
+    "
+fi
+
+BUGS_TO="mixi@exherbo.org"
+
+postfix_src_prepare() {
+    # fix makedefs to allow default tool names to be overridden via env
+    edo sed \
+        -e 's/AR=ar/AR=${AR:-ar}/' \
+        -e 's/RANLIB=ranlib/RANLIB=${RANLIB:-ranlib}/' \
+        -i makedefs
+
+    default
+}
+
+postfix_src_configure() {
+    local makeopts=() auxlibs=( -pthread -ldb -lpam -lresolv )
+    # -DUSE_SASL_AUTH: this enables dovecot SASL and adds no additional build dependencies
+    # -DHAS_DB: this is already enabled in sys_defs.h for linux
+    local ccargs=(
+        -DDEF_COMMAND_DIR=\\\"/usr/$(exhost --target)/bin\\\"
+        -DDEF_DAEMON_DIR=\\\"/usr/$(exhost --target)/lib/postfix\\\"
+        -DDEF_SENDMAIL_PATH=\\\"/usr/$(exhost --target)/bin/sendmail\\\"
+        -DDEF_MANPAGE_DIR=\\\"/usr/share/man\\\"
+        -DDEF_README_DIR=\\\"/usr/share/doc/${PNVR}/readme\\\"
+        -DDEF_HTML_DIR=\\\"/usr/share/doc/${PNVR}/html\\\"
+        -DUSE_SASL_AUTH
+    )
+
+    if [[ $(exhost --target) == *-musl* ]]; then
+        # musl does not support NIS.
+        ccargs+=( -DNO_NIS )
+    else
+        auxlibs+=( -lnsl )
+    fi
+
+    if option ssl; then
+        ccargs+=( -DUSE_TLS )
+        auxlibs+=( -lssl -lcrypto )
+    fi
+
+    if option cyrus; then
+        ccargs+=( -DUSE_CYRUS_SASL -I/usr/$(exhost --target)/include/sasl )
+        auxlibs+=( -lsasl2 )
+    fi
+
+    if option ldap; then
+        ccargs+=( -DHAS_LDAP )
+
+        if ever at_least 3; then
+            makeopts+=( AUXLIBS_LDAP="-lldap -llber" )
+        else
+            auxlibs+=( -lldap -llber )
+        fi
+    fi
+
+    if option mysql; then
+        ccargs+=( -DHAS_MYSQL -I/usr/$(exhost --target)/include/mysql )
+
+        if ever at_least 3; then
+            makeopts+=( AUXLIBS_MYSQL="-L/usr/$(exhost --target)/lib/mysql/ -lmysqlclient -lz -lm" )
+        else
+            auxlibs+=( -L/usr/$(exhost --target)/lib/mysql/ -lmysqlclient -lz -lm )
+        fi
+    fi
+
+    if option postgresql; then
+        ccargs+=( -DHAS_PGSQL )
+        if ever at_least 3; then
+            makeopts+=( AUXLIBS_PGSQL="-lpq" )
+        else
+            auxlibs+=( -lpq )
+        fi
+    fi
+
+    if ever at_least 3; then
+        makeopts+=(
+            shared=yes
+            SHLIB_DIR=/usr/$(exhost --target)/lib/postfix
+        )
+    fi
+
+    export AR="${AR}" RANLIB="${RANLIB}"
+
+    emake \
+        CC="${CC}" \
+        OPT="${CFLAGS}" \
+        CCARGS="${ccargs[*]}" \
+        AUXLIBS="${auxlibs[*]}" \
+        "${makeopts[@]}" \
+        makefiles
+}
+
+postfix_src_install() {
+    LD_LIBRARY_PATH=${WORK}/lib:${LD_LIBRARY_PATH} \
+    edo /bin/sh postfix-install \
+        -non-interactive \
+        install_root="${IMAGE}" \
+        shlib_directory=/usr/$(exhost --target)/lib/postfix \
+        config_directory="/usr/share/doc/${PNVR}/defaults" \
+        readme_directory="/usr/share/doc/${PNVR}/readme"
+
+    edo mv "${IMAGE}"/usr/$(exhost --target)/bin/{,${PN}.}sendmail
+    edo rm "${IMAGE}"/usr/bin/{mailq,newaliases}
+    edo rmdir "${IMAGE}"/usr/bin
+
+    alternatives_for mta ${PN} 9 /usr/$(exhost --target)/bin/sendmail ${PN}.sendmail
+    alternatives_for mta ${PN} 9 /usr/$(exhost --target)/lib/sendmail ../bin/sendmail
+    alternatives_for mta ${PN} 9 /usr/$(exhost --target)/bin/mailq sendmail
+    alternatives_for mta ${PN} 9 /usr/$(exhost --target)/bin/newaliases sendmail
+
+    local manpage
+    for manpage in man1/{mailq.1,newaliases.1} man5/aliases.5; do
+        edo mv "${IMAGE}"/usr/share/man/${manpage%/*}/{,${PN}.}${manpage##*/}
+        alternatives_for mta ${PN} 9 /usr/share/man/${manpage} ${PN}.${manpage##*/}
+    done
+
+    keepdir /var/lib/postfix
+    edo chown -R postfix:postfix "${IMAGE}"/var/lib/postfix/
+
+    keepdir /var/spool/postfix
+    rmdir "${IMAGE}"/var/spool/postfix/*
+    edo chown root "${IMAGE}"/var/spool/postfix
+
+    edo chown root:postdrop "${IMAGE}"/usr/$(exhost --target)/bin/post{drop,queue}
+    edo chmod 2711 "${IMAGE}"/usr/$(exhost --target)/bin/post{drop,queue}
+
+    pamd_mimic_system smtp auth auth account
+
+    dodir /etc/postfix
+    insinto /etc/postfix
+    doins "${IMAGE}"/usr/share/doc/${PNVR}/defaults/{main,master}.cf
+    keepdir /etc/postfix/postfix-files.d
+
+    insinto /usr/share/doc/${PNVR}
+    doins -r "${WORK}"/examples
+
+    dosym /usr/share/doc/${PNVR} /usr/share/doc/${PN}
+
+    install_systemd_files
+}
+

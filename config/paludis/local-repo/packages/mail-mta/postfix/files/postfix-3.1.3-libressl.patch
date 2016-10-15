@@ -1,0 +1,117 @@
+Source: http://cvsweb.openbsd.org/cgi-bin/cvsweb/ports/mail/postfix/snapshot/patches/?hideattic=1#dirlist
+Upstream: no, upstream does not define a contribution workflow/platform
+Reason: fix compatibility with LibreSSL
+
+--- src/posttls-finger/posttls-finger.c.orig	Thu Sep  1 21:51:53 2016
++++ src/posttls-finger/posttls-finger.c	Thu Sep  1 21:54:23 2016
+@@ -1511,7 +1511,8 @@ static int finger(STATE *state)
+     return (0);
+ }
+ 
+-#if defined(USE_TLS) && OPENSSL_VERSION_NUMBER < 0x10100000L
++#if defined(USE_TLS) && \
++    ( OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER) )
+ 
+ /* ssl_cleanup - free memory allocated in the OpenSSL library */
+ 
+@@ -1958,7 +1959,8 @@ int     main(int argc, char *argv[])
+     cleanup(&state);
+ 
+     /* OpenSSL 1.1.0 and later (de)initialization is implicit */
+-#if defined(USE_TLS) && OPENSSL_VERSION_NUMBER < 0x10100000L
++#if defined(USE_TLS) && \
++    ( OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER) )
+     ssl_cleanup();
+ #endif
+ 
+--- src/tls/tls_client.c.orig	Thu Sep  1 21:53:17 2016
++++ src/tls/tls_client.c	Thu Sep  1 21:55:50 2016
+@@ -299,7 +299,7 @@ TLS_APPL_STATE *tls_client_init(const TLS_CLIENT_INIT_
+      */
+     tls_check_version();
+ 
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+ 
+     /*
+      * Initialize the OpenSSL library by the book! To start with, we must
+@@ -441,7 +441,7 @@ TLS_APPL_STATE *tls_client_init(const TLS_CLIENT_INIT_
+     /*
+      * 2015-12-05: Ephemeral RSA removed from OpenSSL 1.1.0-dev
+      */
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+ 
+     /*
+      * According to the OpenSSL documentation, temporary RSA key is needed
+--- src/tls/tls_dane.c.orig	Thu Sep  1 21:56:25 2016
++++ src/tls/tls_dane.c	Thu Sep  1 21:56:58 2016
+@@ -2163,7 +2163,7 @@ static SSL_CTX *ctx_init(const char *CAfile)
+     tls_param_init();
+     tls_check_version();
+ 
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+     SSL_load_error_strings();
+     SSL_library_init();
+ #endif
+--- src/tls/tls.h.orig	Sat Feb  6 15:09:41 2016
++++ src/tls/tls.h	Sun Feb 14 19:54:38 2016
+@@ -89,7 +89,7 @@ extern const char *str_tls_level(int);
+ #endif
+ 
+  /* Backwards compatibility with OpenSSL < 1.1.0 */
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+ #define OpenSSL_version_num SSLeay
+ #define OpenSSL_version SSLeay_version
+ #define OPENSSL_VERSION SSLEAY_VERSION
+--- src/tls/tls_rsa.c.orig	Thu Sep  1 21:57:15 2016
++++ src/tls/tls_rsa.c	Thu Sep  1 21:58:11 2016
+@@ -57,7 +57,7 @@
+  /*
+   * 2015-12-05: Ephemeral RSA removed from OpenSSL 1.1.0-dev
+   */
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+ 
+ /* tls_tmp_rsa_cb - call-back to generate ephemeral RSA key */
+ 
+@@ -109,7 +109,7 @@ int     main(int unused_argc, char *const argv[])
+     /*
+      * 2015-12-05: Ephemeral RSA removed from OpenSSL 1.1.0-dev
+      */
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+     RSA    *rsa;
+ 
+     msg_vstream_init(argv[0], VSTREAM_ERR);
+--- src/tls/tls_server.c.orig	Thu Sep  1 21:58:44 2016
++++ src/tls/tls_server.c	Thu Sep  1 21:59:40 2016
+@@ -174,7 +174,7 @@ static const char server_session_id_context[] = "Postf
+ #endif					/* OPENSSL_VERSION_NUMBER */
+ 
+  /* OpenSSL 1.1.0 bitrot */
+-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+ typedef const unsigned char *session_id_t;
+ 
+ #else
+@@ -377,7 +377,7 @@ TLS_APPL_STATE *tls_server_init(const TLS_SERVER_INIT_
+      */
+     tls_check_version();
+ 
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+ 
+     /*
+      * Initialize the OpenSSL library by the book! To start with, we must
+@@ -588,7 +588,7 @@ TLS_APPL_STATE *tls_server_init(const TLS_SERVER_INIT_
+     /*
+      * 2015-12-05: Ephemeral RSA removed from OpenSSL 1.1.0-dev
+      */
+-#if OPENSSL_VERSION_NUMBER < 0x10100000L
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+ 
+     /*
+      * According to OpenSSL documentation, a temporary RSA key is needed when

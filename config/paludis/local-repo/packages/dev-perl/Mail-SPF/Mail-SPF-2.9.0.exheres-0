@@ -1,0 +1,41 @@
+# Copyright 2011 Dan Callaghan <djc@djc.id.au>
+# Distributed under the terms of the GNU General Public License v2
+
+MY_PNV=${PN}-v${PV}
+require perl-module [ module_author=JMEHNLE subdir=${PN,,} ]
+
+SUMMARY="A Perl implementation of Sender Policy Framework"
+DESCRIPTION="
+Mail::SPF is an object-oriented implementation of Sender Policy Framework (SPF). See
+http://www.openspf.org for more information about SPF.
+
+This class collection aims to fully conform to the SPF specification (RFC 4408) so as to serve both
+as a production quality SPF implementation and as a reference for other developers of SPF
+implementations.
+"
+
+LICENCES="BSD-3"
+SLOT="0"
+PLATFORMS="~amd64 ~x86"
+
+WORK="${WORKBASE}/${MY_PNV}"
+
+DEPENDENCIES="
+    build+run:
+        dev-perl/Error
+        dev-perl/Net-DNS[>=0.58]
+        dev-perl/NetAddr-IP[>=4]
+        dev-perl/URI[>=1.13]
+    test:
+        dev-perl/Net-DNS-Resolver-Programmable
+        dev-perl/Test-Pod
+"
+
+src_prepare() {
+    edo sed -i \
+            -e "s#/usr/sbin#/usr/$(exhost --target)/bin#" \
+            Build.PL
+
+    default
+}
+
