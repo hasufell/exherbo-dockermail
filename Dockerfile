@@ -32,6 +32,11 @@ RUN eclectic config accept-all
 
 ##### APPLICATION CONFIG #####
 
+# copy "mailbase" stuff
+COPY ./config/mailcap /etc/mailcap
+COPY ./config/mail /etc/mail
+COPY ./config/pam.d /etc/pam.d
+
 # create dovecot certificates
 RUN mkdir -p /var/tmp/dovecot-cert
 RUN cp /usr/share/doc/dovecot-*/mkcert.sh /var/tmp/dovecot-cert/ ; \
