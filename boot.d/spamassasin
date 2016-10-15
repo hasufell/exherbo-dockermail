@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 sa-update
 
 razor-admin -home=/etc/spamassassin/.razor -register
