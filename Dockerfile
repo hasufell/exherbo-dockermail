@@ -1,19 +1,31 @@
-FROM        hasufell/gentoo-amd64-paludis:latest
+FROM        hasufell/exherbo
 MAINTAINER  Julian Ospald "hasufell@posteo.de"
 
-##### PACKAGE INSTALLATION #####
 
 # copy paludis config
 COPY ./config/paludis /etc/paludis
 
-# update world with our USE flags
-RUN chgrp paludisbuild /dev/tty && \
-	cave resolve -c world -x --without sys-devel/gcc && \
-	cave resolve -c mail -x --without sys-devel/gcc && \
-	cave resolve -c tools --without sys-devel/gcc -x
 
-# update etc files... hope this doesn't screw up
-RUN etc-update --automode -5
+##### PACKAGE INSTALLATION #####
+
+# update world with our options
+RUN chgrp paludisbuild /dev/tty && \
+	eclectic env update && \
+	source /etc/profile && \
+	cave sync && \
+	cave resolve -z -1 repository/net -x && \
+	cave resolve -z -1 repository/hasufell -x && \
+	cave resolve -z -1 repository/python -x && \
+	cave resolve -z -1 repository/perl -x && \
+	cave resolve -z -1 repository/nicoo -x && \
+	cave update-world -s mail && \
+	cave resolve -ks -Sa -sa -B world -x -f --permit-old-version '*/*' && \
+	cave resolve -ks -Sa -sa -B world -x --permit-old-version '*/*' && \
+	cave purge -x && \
+	cave fix-linkage -x && \
+	rm -rf /usr/portage/distfiles/*
+
+RUN eclectic config accept-all
 
 ################################
 
