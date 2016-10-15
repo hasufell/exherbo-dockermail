@@ -65,6 +65,7 @@ RUN sed -r -i -e \
 RUN newaliases -oA/etc/mail/aliases
 
 # Dovecot configuration
+COPY ./config/dovecot/dovecot.conf /etc/dovecot/dovecot.conf
 COPY ./config/dovecot/dovecot.mail /etc/dovecot/conf.d/10-mail.conf
 COPY ./config/dovecot/dovecot.ssl /etc/dovecot/conf.d/10-ssl.conf
 COPY ./config/dovecot/dovecot.auth /etc/dovecot/conf.d/10-auth.conf
