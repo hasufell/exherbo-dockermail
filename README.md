@@ -44,7 +44,7 @@ Use the the example config files in `config/example` to get you started.
 
 5. Build container
 
-		docker build -t hasufell/gentoo-dockermail .
+		docker build -t hasufell/exherbo-dockermail .
 
 6. Run container
 
