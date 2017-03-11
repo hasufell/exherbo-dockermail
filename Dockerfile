@@ -81,10 +81,10 @@ COPY ./config/dovecot/dovecot.logging /etc/dovecot/conf.d/10-logging.conf
 
 # spamassasin configuration
 COPY ./config/spamassasin/spamassasin.local.append \
-	/etc/spamassassin/local.cf.append
-RUN mkdir /etc/spamassassin/.pyzor /etc/spamassassin/.razor
-COPY ./config/spamassasin/pyzor.servers /etc/spamassassin/.pyzor/servers
-RUN cat /etc/spamassassin/local.cf.append >> /etc/spamassassin/local.cf
+	/etc/mail/spamassassin/local.cf.append
+RUN mkdir /etc/mail/spamassassin/.pyzor /etc/mail/spamassassin/.razor
+COPY ./config/spamassasin/pyzor.servers /etc/mail/spamassassin/.pyzor/servers
+RUN cat /etc/mail/spamassassin/local.cf.append >> /etc/mail/spamassassin/local.cf
 COPY ./update-spamlists /usr/bin/update-spamlists
 RUN chmod +x /usr/bin/update-spamlists
 
