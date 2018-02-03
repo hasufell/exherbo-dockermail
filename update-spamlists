@@ -7,4 +7,5 @@ while true; do
 		razor-admin -home=/etc/mail/spamassassin/.razor -discover
 		sa-update
 	fi
+	sleep 1h
 done
